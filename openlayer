@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+    <style>
+      .map {
+        height: 600px;
+        width: 100%;
+      }
+	  .ol-popup{
+		position:absolute;
+		background-color:white;
+		padding:15px;
+		border-radius:10px;
+		border:1px solid #cccccc;
+		bottom:12px;
+		left: -50px;
+        min-width: 280px;
+	  }
+	  .ol-popup:after, .ol-popup:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+	   .ol-popup:after {
+        border-top-color: white;
+        border-width: 10px;
+        left: 48px;
+        margin-left: -10px;
+      }
+      .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        left: 48px;
+        margin-left: -11px;
+      }
+      .ol-popup-closer {
+        text-decoration: none;
+        position: absolute;
+        top: 2px;
+        right: 8px;
+      }
+      .ol-popup-closer:after {
+        content: "✖";
+      }
+	  
+	  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+    </style>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+    <title>OpenLayers example</title>
+  </head>
+  <body>
+    <h2>My Map</h2>
+    <div id="map" class="map"></div>
+	
+	<div id="overlay">
+	
+	<div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+    </div>
+	<script type="text/javascript">
+	
+	// styling the popup element
+	
+	var container 	=	 	document.getElementById('popup');
+	var content 	= 		document.getElementById('popup-content');
+	var closer 		= 		document.getElementById('popup-closer');
+	
+	// make an overlay to show popup on the map
+	var overlay = new ol.Overlay({
+	  element: container,
+	  autoPan: true,
+		autoPanAnimation: {
+	  duration: 250
+	}
+	});
+
+      /**
+       * Add a click handler to hide the popup.
+       * @return {boolean} Don't follow the href.
+       */
+      closer.onclick = function() {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+      };
+
+
+		  
+	var baseMapLayer = new ol.layer.Tile({
+	  source: new ol.source.OSM()
+	});
+	var map = new ol.Map({
+	  target: 'map',
+	  layers: [ baseMapLayer],
+	  view: new ol.View({
+			  center: ol.proj.fromLonLat([-9.567156,30.412447]), 
+			  zoom: 9 
+			})
+	});
+
+	var marker = new ol.Feature({
+	  geometry: new ol.geom.Point(
+		ol.proj.fromLonLat([-9.567156,30.412447])
+	  ), 
+	});
+	var marker2 = new ol.Feature({
+		geometry: new ol.geom.Point(
+		ol.proj.fromLonLat([-9.482459,30.379512])
+	  ),  
+	});
+	
+			var marker3 = new ol.Feature({
+		geometry: new ol.geom.Point(
+		ol.proj.fromLonLat([-9.382459,30.479512])
+	  ),  
+	});
+	
+	marker.setStyle(new ol.style.Style({
+	  image: new ol.style.Icon(({
+		crossorigin:"anonymous",
+		src:'marker.png'
+	  }))
+	}));
+	
+	marker2.setStyle(new ol.style.Style({
+	  image: new ol.style.Icon(({
+		crossorigin:"anonymous",
+		src:'marker.png'
+	  }))
+	}));
+	
+		marker3.setStyle(new ol.style.Style({
+	  image: new ol.style.Icon(({
+		crossorigin:"anonymous",
+		src:'marker.png'
+	  }))
+	}));
+	
+
+		var vectorSource = new ol.source.Vector({
+			features: [marker,marker2,marker3]
+		});
+		var markerVectorLayer = new ol.layer.Vector({
+	  source: vectorSource,
+		});
+	map.addLayer(markerVectorLayer);
+	
+	console.log(marker3);
+	  // register an event handler for the click event
+        map.on('click', function(event) {
+          // extract the spatial coordinate of the click event in map projection units
+         var coord = event.coordinate;
+          // transform it to decimal degrees
+         var degrees = ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326');
+          // format a human readable version
+         var hdms = ol.coordinate.toStringHDMS(degrees);
+          // update the overlay element's content
+          //var content = overlay.getElement();
+          content.innerHTML = '<p>Name : Station 1</p><table><tr><th>Date</th><th>T</th><th>Hr</th><th>Rg</th><th>P</th><th>Eto</th></tr><tr><td>A</td><td>M</td><td>G</td><td>d</td><td>c</td><td>w</td></tr></table>';
+          // position the element (using the coordinate in the map's projection)
+          overlay.setPosition(coord);
+          // and add it to the map
+          map.addOverlay(overlay);
+        });
+    </script>
+  </body>
+</html>
