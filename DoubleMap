@@ -1,0 +1,202 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+    <style>
+      #map {
+        height: 400px;
+        width: 100%;
+      }
+	  
+	  table {
+		font-family: arial, sans-serif;
+		border-collapse: collapse;
+		width: 100%;
+	}
+
+	td, th {
+		border: 1px solid #dddddd;
+		text-align: left;
+		padding: 8px;
+	}
+
+	tr:nth-child(even) {
+		background-color: #dddddd;
+	}
+	.minimap{
+		background:red;
+		width:80px;
+		height:80px;
+		position:absolute;
+		background:url("osm.png") no-repeat;
+		background-size:cover;
+		right:10px;
+		top:20px;
+		border-radius:50px;
+		border:1px solid #cccccc;
+		z-index:999
+	}
+	.minimap-bg{
+		background-color:green;
+		background:url("satilete.png") no-repeat;
+		background-size:cover;
+		z-index:999
+	}
+	
+    </style>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+	
+    <title>OpenLayers example</title>
+	</head>
+<body>
+	
+  <div id="map" ></div>
+  <div id="minimap" class='minimap'></div>
+  <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <script>
+  
+  
+	  
+	  
+	var minimap = document.getElementById('minimap');
+
+	
+    //map = new OpenLayers.Map("map");
+   // map.addLayer(new OpenLayers.Layer.OSM());
+
+    var lonLat = new OpenLayers.LonLat( -9.567156,30.412447 )
+          .transform(
+            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+           // map.getProjectionObject() // to Spherical Mercator Projection
+          );
+
+    var markers = new OpenLayers.Layer.Markers( "Markers" );
+	
+		//map.addLayer(markers);
+		// date variable show in the table
+		var date = new Date().toJSON().slice(0,10).replace(/-/g,'/');
+	
+
+
+	
+		var appId = 'Your HERE Maps appId from https://developer.here.com/';
+		var appCode = 'Your HERE Maps appCode from https://developer.here.com/';
+		var hereLayers = [
+        {
+          base: 'base',
+          type: 'maptile',
+          scheme: 'normal.day'
+        },
+        {
+          base: 'aerial',
+          type: 'maptile',
+          scheme: 'satellite.day'
+        }
+      ];
+      var urlTpl = 'https://{1-4}.{base}.maps.cit.api.here.com' +
+        '/{type}/2.1/maptile/newest/{scheme}/{z}/{x}/{y}/256/png' +
+        '?app_id={app_id}&app_code={app_code}';
+      var layers = [];
+      var i, ii;
+      for (i = 0, ii = hereLayers.length; i < ii; ++i) {
+        var layerDesc = hereLayers[i];
+        layers.push(new ol.layer.Tile({
+          visible: false,
+          preload: Infinity,
+          source: new ol.source.XYZ({
+            url: createUrl(urlTpl, layerDesc),
+          })
+        }));
+      }
+
+      var map = new ol.Map({
+        layers: layers,
+        // Improve user experience by loading tiles while dragging/zooming. Will make
+        // zooming choppy on mobile or slow devices.
+        loadTilesWhileInteracting: true,
+        target: 'map',
+        view: new ol.View({
+          center:[921371.9389, 6358337.7609],
+          zoom: 11
+        })
+      });
+
+      function createUrl(tpl, layerDesc) {
+        return tpl
+          .replace('{base}', layerDesc.base)
+          .replace('{type}', layerDesc.type)
+          .replace('{scheme}', layerDesc.scheme)
+          .replace('{app_id}', layerDesc.app_id)
+          .replace('{app_code}', layerDesc.app_code);
+      }
+	var satellite;
+
+	  	$( ".minimap" ).click(function(e) {
+		  $( this ).toggleClass( "minimap-bg" );
+		  if($( this ).hasClass( "minimap-bg" )){
+			// set a boolean variable if minimap shows satellite set true else set false 
+			 satellite=true;
+		  }else{
+			satellite=false;
+			scheme = 'satellite.day';
+		  }
+		  changestyle();
+		});
+		
+		var scheme;
+		function changestyle(){
+			if(satellite){
+				var scheme = 'satellite.day';
+				layers[1].setVisible(hereLayers[1].scheme === scheme);
+				console.log('satellite');
+			}else{
+				scheme = 'normal.day';
+				layers[0].setVisible(hereLayers[0].scheme === scheme);
+				console.log('normal');
+		  }
+		}
+		
+				map.events.register("click", map , function(e){
+				var opx = map.getLonLatFromPixel(e.xy) ;
+				var marker = new OpenLayers.Marker(opx);
+				markers.addMarker(marker);
+				marker.events.register("click", marker, function(e){
+				popup = new OpenLayers.Popup.FramedCloud("chicken",
+					 marker.lonlat,
+				 new OpenLayers.Size(200, 200),
+				 "<p>Name : Station 1</p><table><tr><th>Date</th><th>T</th><th>Hr</th><th>Rg</th><th>P</th><th>Eto</th></tr><tr><td>"+date+"</td><td>12.00c</td><td>40.00%</td><td>20000.00</td><td>00.00</td><td>5.00</td></tr></table>",
+				 null, true);
+				 map.addPopup(popup);
+		  }); 
+	});
+	map.setCenter(lonLat, 9);
+	
+	changestyle();
+	
+	// function on click over minimap dev
+
+	
+		<!-- $( ".minimap" ).click(function(e) { -->
+		  <!-- $( this ).toggleClass( "minimap-bg" ); -->
+		  <!-- if($( this ).hasClass( "minimap-bg" )){ -->
+		  
+		  <!-- //console.log('hi'); -->
+			<!-- // set a boolean variable if minimap shows satellite set true else set false  -->
+			<!-- console.log('hi'); -->
+			<!-- var satellite=true; -->
+			
+		  <!-- }else{ -->
+			<!-- console.log('v'); -->
+		  <!-- } -->
+		<!-- }); -->
+			
+	
+	
+	
+	
+	
+	
+  </script>
+  
+</body>
+</html>
