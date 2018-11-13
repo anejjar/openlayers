@@ -185,3 +185,115 @@ tr:nth-child(even) {
     </script>
   </body>
 </html>
+
+
+
+//second virtion 
+
+
+
+
+<html>
+  <head>
+	<title>OpenLayers Marker Popups</title>
+		<style>
+			table {
+		font-family: arial, sans-serif;
+		border-collapse: collapse;
+		width: 100%;
+	}
+
+	td, th {
+		border: 1px solid #dddddd;
+		text-align: left;
+		padding: 8px;
+	}
+
+	tr:nth-child(even) {
+		background-color: #dddddd;
+	}
+		</style>
+	</head>
+  <body>
+  <div id="mapdiv"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.11/lib/OpenLayers.js"></script> 
+  <script>
+    map = new OpenLayers.Map("mapdiv");
+    map.addLayer(new OpenLayers.Layer.OSM());
+    
+    epsg4326 =  new OpenLayers.Projection("EPSG:4326"); //WGS 1984 projection
+    projectTo = map.getProjectionObject(); //The map projection (Spherical Mercator)
+   
+    var lonLat = new OpenLayers.LonLat(-9.567156,30.412447 ).transform(epsg4326, projectTo);
+          
+    
+    var zoom=11;
+    map.setCenter (lonLat, zoom);
+		// date variable show in the table
+		var date = new Date().toJSON().slice(0,10).replace(/-/g,'/');
+	
+    var vectorLayer = new OpenLayers.Layer.Vector("Overlay");
+    
+    // Define markers as "features" of the vector layer:
+    var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point( -9.567156,30.412447 ).transform(epsg4326, projectTo),
+            {description:'<p>Name : Station 1</p><table><tr><th>Date</th><th>T</th><th>Hr</th><th>Rg</th><th>P</th><th>Eto</th></tr><tr><td>'+date+'</td><td>12.00c</td><td>40.00%</td><td>20000.00</td><td>00.00</td><td>5.00</td></tr></table>'} ,
+            {externalGraphic: 'http://netanimations.net/colorchangearrowdown.gif', graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
+        );    
+    vectorLayer.addFeatures(feature);
+    
+	 var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point( -9.467156,30.312447 ).transform(epsg4326, projectTo),
+            {description:'<p>Name : Station 2</p><table><tr><th>Date</th><th>T</th><th>Hr</th><th>Rg</th><th>P</th><th>Eto</th></tr><tr><td>'+date+'</td><td>12.00c</td><td>40.00%</td><td>20000.00</td><td>00.00</td><td>5.00</td></tr></table>'} ,
+            {externalGraphic: 'http://netanimations.net/colorchangearrowdown.gif', graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
+        );    
+    vectorLayer.addFeatures(feature);
+	
+    var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point( -9.482459,30.379512 ).transform(epsg4326, projectTo),
+            {description:'<p>Name : Station 3</p><table><tr><th>Date</th><th>T</th><th>Hr</th><th>Rg</th><th>P</th><th>Eto</th></tr><tr><td>'+date+'</td><td>12.00c</td><td>40.00%</td><td>20000.00</td><td>00.00</td><td>5.00</td></tr></table>'} ,
+            {externalGraphic: 'http://netanimations.net/colorchangearrowdown.gif', graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
+        );    
+    vectorLayer.addFeatures(feature);
+
+    var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point(-9.382459,30.479512  ).transform(epsg4326, projectTo),
+            {description:'<p>Name : Station 4</p><table><tr><th>Date</th><th>T</th><th>Hr</th><th>Rg</th><th>P</th><th>Eto</th></tr><tr><td>'+date+'</td><td>12.00c</td><td>40.00%</td><td>20000.00</td><td>00.00</td><td>5.00</td></tr></table>'} ,
+            {externalGraphic: 'http://netanimations.net/colorchangearrowdown.gif', graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
+        );    
+    vectorLayer.addFeatures(feature);
+
+   
+    map.addLayer(vectorLayer);
+ 
+    
+    //Add a selector control to the vectorLayer with popup functions
+    var controls = {
+      selector: new OpenLayers.Control.SelectFeature(vectorLayer, { onSelect: createPopup, onUnselect: destroyPopup })
+    };
+
+    function createPopup(feature) {
+      feature.popup = new OpenLayers.Popup.FramedCloud("pop",
+          feature.geometry.getBounds().getCenterLonLat(),
+          null,
+          '<div class="markerContent">'+feature.attributes.description+'</div>',
+          null,
+          true,
+          function() { controls['selector'].unselectAll(); }
+      );
+      //feature.popup.closeOnMove = true;
+      map.addPopup(feature.popup);
+    }
+
+    function destroyPopup(feature) {
+      feature.popup.destroy();
+      feature.popup = null;
+    }
+    
+    map.addControl(controls['selector']);
+    controls['selector'].activate();
+      
+  </script>
+  
+</body>
+</html>
