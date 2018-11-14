@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+    
+<style>
+	#bordermapsinfo{
+		margin: 0px 0px 0px 7%; 
+	}
+	#map{
+		height:80%;
+	}
+    a.skiplink {
+        position: absolute;
+        clip: rect(1px, 1px, 1px, 1px);
+        padding: 0;
+        border: 0;
+        height: 1px;
+        width: 1px;
+        overflow: hidden;
+      }
+    a.skiplink:focus {
+        clip: auto;
+        height: auto;
+        width: auto;
+      
+        padding: 0.3em;
+      }
+      #map:focus {
+		border : 1px solide red ; 
+        outline: #4A74A8 solid 0.15em;
+      }
+	 .popover-content {
+			padding: 9px 9px !important;
+			width: auto !important;
+		}
+	 .popover {
+			max-width: none !important; 
+		}
+	.ol-unselectable {
+			width: none  !important; 
+			height: none   !important; 
+		}
+		div.transbox {
+  margin: 30px;
+  background-color: #ffffff;
+  border: 1px solid black;
+  opacity: 0.6;
+  filter: alpha(opacity=60); /* For IE8 and earlier */
+}
+
+div.transbox p {
+  margin: 5%;
+  font-weight: bold;
+  color: #000000;
+}
+.row-satellite{
+	margin-right:50px;
+}
+</style>
+	  <style> 
+ .thumbnail {
+	z-index: 1;
+    position: absolute;
+    left: 82%;
+    top: 18%;
+    opacity: 1;
+    border-image-width: 8px 8px 8px 8px;
+    border-style: solid;
+    border-color: gray;
+	border : 0 ;
+	background : 0 ;
+ }
+  </style>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+    <title>OpenLayers example</title>
+  </head>
+  <body>
+<div style="padding:0px 0px 0px 80px ;">
+  
+	
+	<div id="div-cerle" class="row-satellite">
+		<a href="#" class="thumbnail">
+		 <img id="choix_carte" onclick="choix_cartoo()" src="img/rsz_osm.png"   width="100px" height="100px" class="img-circle" title="ESRI PLAN"  />
+		</a>
+	</div>
+	<div id="bordermapsinfo" class="panel panel-info">
+		<div class="panel-body">
+			<div>
+				<body>
+				<div id="popup"></div>
+					<div id="map" class="map">
+					</div>
+					<div id="info">&nbsp;</div>
+				</body>
+			</div>
+							
+		</div>
+	</div>
+</div>
+    
+	
+    <script>
+		function charger(myRadio) {
+			t = document.getElementById("tab").checked;
+			if(t) 
+			{
+				document.getElementById("tablet").style.display="block";
+				document.getElementById("map").style.display="none";
+				document.getElementById("div-cerle").style.display="none";
+				document.getElementById("div-cerle").style.display="none";
+				document.getElementById("bordermapsinfo").style.display = "none";
+			}
+			m = document.getElementById("mapchecked").checked;
+			if(m)
+			{
+				document.getElementById("div-cerle").style.display="block";
+				document.getElementById("tablet").style.display="none";
+				document.getElementById("map").style.display="block";
+				document.getElementById("bordermapsinfo").style.display="block";
+			}	
+		}
+	var j=1;
+	var vector_station_all = []; 
+	var vector_station_array_meteo = [];
+	var vector_station_array_plant = [];
+	// var vector_station_array_piezo = [];
+	// var vector_station_array_niveau = []; 
+	
+	// <?php 
+	
+	// foreach($station as $stat)  {
+	
+		// if($stat->type_id==1){
+			// $Data_Meteo	=	DB::table("calcul_".$stat->dev_name)
+									// ->order_by('date', 'desc')
+									// ->first();
+			// if(isset($Data_Meteo) && !empty($Data_Meteo) && count($Data_Meteo)>0){ 
+
+									// $SECount = $SWCount = $NECount = $NWCount = 0;
+									// $North	=	'0';
+									// $NE		=	'45';
+									// $East	=	'90';
+									// $SE		=	'135';
+									// $South	=	'180';
+									// $SW		=	'225';
+									// $West	=	'270';
+									// $NW		=	'315';
+									// $North2 =	'360';
+									// $Dvent =$Data_Meteo->winddirection;
+									// if (($North <= $Dvent) && ($Dvent < $East)) {$NECount++;}
+									// if (($East <= $Dvent) && ($Dvent < $South)) {$SECount++;}
+									// if (($South <= $Dvent) && ($Dvent < $West)) {$SWCount++;}
+									// if (($West <= $Dvent) && ($Dvent < $North2)) {$NWCount++;}
+								// $max_direction = max($SECount,$SWCount,$NECount,$NWCount);
+								// switch ($max_direction) 
+								// {
+									// case 0 :
+										// $direction_vent = 'N';
+										// break;
+									// case $SECount :
+										// $direction_vent = 'SE';
+										// break;
+									// case $SWCount :
+										// $direction_vent = 'SW';
+										// break;
+									// case $NECount :
+										// $direction_vent = 'NE';
+										// break;
+									// case $NWCount :
+										// $direction_vent = 'NW';
+										// break;
+								// }
+		// ?>			
+		// var iconFeature = new ol.Feature({ 
+			// geometry: new ol.geom.Point(ol.proj.fromLonLat([<?php echo $stat->y; ?>,<?php echo $stat->x ?>])),
+			// name:"<span class='label label-danger'> {{str_replace('_',' ',$stat->dev_name)}} </span> <div class='text-right'><small>{{date('d/m/Y H:i',strtotime($Data_Meteo->date))}} </small></div><table><tr><th><img src='{{ url('/assets/img/icons/temp.gif') }}' title='Temperature'/> </th><th><img src='{{ url('/assets/img/icons/RH.gif') }}' title='Humidite' /></th><th> <img src='{{ url('/assets/img/icons/GR.gif') }}' title='Pyranometre'/></th><th> <img src='{{ url('/assets/img/icons/WINDSPEED.gif') }}' title='Vitesse du vent '/> </th><th><img src='{{ url('/assets/img/icons/WINDDIR.gif') }}' title='Direction de Vent' /> </th><th><img src='{{ url('/assets/img/icons/RAIN.gif') }}' title='Precipetation' /></th><th> ∑ETo</th></tr></thead><tbody><tr><td>{{number_format($Data_Meteo->moytemperature, 2)}} °C</td><td> {{number_format($Data_Meteo->moyrelativehumidity, 2)}} %</td><td>{{number_format($Data_Meteo->pyranometer, 2)}} w/m²</td><td>{{number_format($Data_Meteo->windspeed, 2)}} km/h </td><td></td><td>{{number_format($Data_Meteo->precipitation, 2)}} mm</td> <td>{{number_format($Data_Meteo->et0, 2)}} mm</td></tr></tbody></table>",
+		
+		// });
+		
+		
+		
+		// <?php
+		// // }
+		// } 
+		// else {
+			// ?> 
+			
+			
+			
+			
+			// marker = iconFeature
+		var iconFeature = new ol.Feature({ 
+		  geometry: new ol.geom.Point(
+		  ol.proj.fromLonLat([-9.567156,30.412447])),
+			//name:"<span class='label label-danger'>{{str_replace('_',' ',$stat->dev_name)}}</span>",
+		}); 
+		
+		// make icon as marker 
+		var iconStyle = new ol.style.Style({
+		  image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+			scale: 0.6, 
+			opacity: 1, 
+			src: 'img/marker1.png' 
+		  })), 
+				text: new ol.style.Text({ 
+				 font: '18px sans-serif', 
+				 text: 'sans-serif1', 
+				 fill: new ol.style.Fill({color: 'white'}),  
+				 offsetX: 20, 
+				 offsetY: -20 
+				})  
+		});
+		iconFeature.setStyle(iconStyle);
+		
+		
+		
+			var vectorSource = new ol.source.Vector({
+			  features: [iconFeature]
+			});
+			
+			
+		var namevectorlayer = 'type1' ;
+		var vectorLayer = new ol.layer.Vector({
+		  name: namevectorlayer,
+		  source: vectorSource
+		});
+
+		
+	 vector_station_array_meteo.push(vectorLayer);
+	 
+	 
+	 
+	 
+	 	// <?php 
+			// }
+			// elseif($stat->type_id==2){
+		// ?>
+		// var iconFeature = new ol.Feature({ 
+		  // geometry: new ol.geom.Point(ol.proj.fromLonLat([<?php echo $stat->y ?> , <?php echo $stat->x?>])),
+			// name:"<span class='label label-danger'>{{str_replace('_',' ',$stat->dev_name)}}</span>",
+		// }); 
+		// var iconStyle = new ol.style.Style({
+			  // image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+				// scale: 0.6, 
+				// opacity: 1, 
+				// src: '/img/marker2.png' 
+			  // })), 
+				// text: new ol.style.Text({ 
+				 // font: '18px sans-serif', 
+				 // text: '<?php echo str_replace('_',' ',$stat->dev_name); ?>', 
+				 // fill: new ol.style.Fill({color: 'white'}),  
+				 // offsetX: -20, 
+				 // offsetY: 20 
+				// }) 
+		// }); 
+		// // console.log(<?php echo $stat->x?> , <?php echo $stat->y ?>);
+		// iconFeature.setStyle(iconStyle);
+			// var vectorSource = new ol.source.Vector({
+			  // features: [iconFeature]
+			// });
+			
+		// // var namevectorlayer = '<?php echo str_replace(' ','_',$stat->dev_name); ?>' ;
+		// var namevectorlayer = 'type2' ;
+		// var vectorLayer = new ol.layer.Vector({
+		  // name: namevectorlayer,
+		  // source: vectorSource
+		// }); 
+	 // vector_station_array_plant.push(vectorLayer);
+		// <?php
+			// }
+			// }
+			// ?>
+			 //console.log("d");
+	 <!-- var attribution = new ol.Attribution({  -->
+	  <!-- html: 'Tiles &copy; <a href="http://services.arcgisonline.com/ArcGIS/' + -->
+		  <!-- 'rest/services/World_Topo_Map/MapServer">a</a>' -->
+			<!-- // html: 'Tiles ' -->
+	<!-- }); -->
+	
+	
+	var satellite =  new ol.layer.Tile({
+			title: 'OSM',
+			type: 'base',
+			visible: true,
+			source: new ol.source.XYZ({
+					type: 'base',
+					//attributions: [attribution],
+					url: 
+					'http://server.arcgisonline.com/ArcGIS/rest/services/'+'World_Imagery/MapServer/tile/{z}/{y}/{x}'
+					//'https://server.arcgisonline.com/ArcGIS/rest/services/' +'World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
+			})
+		}); 
+
+// KML 
+     var projection = ol.proj.get('EPSG:3857');
+
+      var raster = new ol.layer.Tile({
+        source: new ol.source.BingMaps({
+          imagerySet: 'Aerial',
+          key: 'Your Bing Maps Key from http://www.bingmapsportal.com/ here'
+        })
+      });
+
+      // var vector = new ol.layer.Vector({
+        // source: new ol.source.Vector({
+          // url: '{{ url('/kml/Souss_Massa.kml') }}',
+          // format: new ol.format.KML()
+        // })
+      // });
+      // var vector1 = new ol.layer.Vector({
+        // source: new ol.source.Vector({
+          // url: '{{ url('/kml/Draa.kml') }}',
+          // format: new ol.format.KML()
+        // })
+      // });
+
+      // console.log(vector_station_array_meteo);
+	  var osm  = new ol.layer.Tile({
+		  source: new ol.source.OSM()
+		  }) 
+		  
+	 vector_station_all.unshift(satellite);
+	  vector_station_all.unshift(osm);
+	  vector_station_all = vector_station_all.concat(vector_station_array_meteo); 
+	  vector_station_all = vector_station_all.concat(vector_station_array_plant);
+
+        var map = new ol.Map({
+            layers: vector_station_all,
+            target: 'map',
+            controls: ol.control.defaults({
+                attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+                    collapsible: false
+                })
+            }),
+            view: new ol.View({
+		        // center: ol.proj.transform([-6.44970703125,27.544606381943326], 'EPSG:4326', 'EPSG:3857'),
+		        center: ol.proj.transform([-6.75150,32.30600], 'EPSG:4326', 'EPSG:3857'),
+		        zoom: 13 ,
+		        minZoom: 3 ,
+		        maxZoom: 17 ,
+		    })
+        });
+      // change mouse cursor when over marker
+	  
+		var target = map.getTarget();
+        var jTarget = typeof target === "string" ? $("#" + target) : $(target);
+        // change mouse cursor when over marker
+        $(map.getViewport()).on('mousemove', function (e) {
+            var pixel = map.getEventPixel(e.originalEvent);
+            var hit = map.forEachFeatureAtPixel(pixel, function (feature, layer) {
+                return true;
+            });
+            if (hit) {
+                jTarget.css("cursor", "pointer");
+            } else {
+                jTarget.css("cursor", "");
+            }
+        });
+		
+function choix_cartoo()
+{
+	
+	j=sessionStorage.getItem("fond")
+	
+	if(j==1){
+		document.getElementById("choix_carte").src = "img/rsz_osm.png"
+		satellite.set('visible', true); 
+		osm.set('visible',false ); 
+		sessionStorage.setItem("fond",2)
+	} 
+	else{  
+	// alert(j);
+		document.getElementById("choix_carte").src = "img/carte_sat.png"
+		satellite.set('visible', false);  
+		osm.set('visible',true ); 
+		sessionStorage.setItem("fond",1)
+	}
+}    
+// alert('vvv');
+// $(".sidebar-toggle").click(function() { 
+	// $(".treeview  li").click($("station_input").val());
+// });
+$(".treeview  li").click(function(eve) { 
+
+		// $(".treeview  li").click($("station_input").val());
+		var element = popup.getElement();
+		$(element).popover('destroy');
+		var thislayer = $(this).text(); 
+		var layerid = $(this).prop('id');
+		var layeridz = $(this).attr("name");
+		jQuery.grep(map.getLayers().getArray(), function(layer) {
+		layerz = layer.get('name') ;
+		thislayer = thislayer.replace(" ", "_");
+		// map.setCenter(centerPoint, zoomLevel); 
+		 if(thislayer==layerz)  
+		{  
+				var features = layer.getSource().getFeatures(); 
+				features.forEach(function(feature) {
+				var point = feature.getGeometry().getCoordinates();
+				// console.log(feature);  
+				map.getView().setCenter(point);
+				map.getView().setZoom(14);
+			    popup.setPosition(point); 
+				// console.log(point);		 		
+				$(element).popover({
+					  'placement': 'top', 
+					  'animation': true,     
+					  'html': true,
+					  'content': feature.get('name') 
+			    }); 
+				$(element).popover('show');
+				});
+				
+			}
+		}); 
+});
+    </script> 
+
+
+<!-------------------------->
+<!-------------------------->
+
+  </body>
+</html>
+
+
+
